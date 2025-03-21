@@ -140,6 +140,13 @@ export const getBook = async (id: string): Promise<Book> => {
 
 export const addBook = async (bookData: AddBookFormData): Promise<Book> => {
   try {
+    // Get current user session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('You must be logged in to add a book');
+    }
+    
     const { data, error } = await supabase
       .from('books')
       .insert({
@@ -150,6 +157,7 @@ export const addBook = async (bookData: AddBookFormData): Promise<Book> => {
         isbn: bookData.isbn,
         published_year: bookData.publishedYear,
         category: bookData.category,
+        user_id: session.user.id, // Add the user_id from the current session
       })
       .select()
       .single();
@@ -227,3 +235,4 @@ export const deleteBook = async (id: string): Promise<void> => {
     throw new Error('Failed to delete book');
   }
 };
+
