@@ -55,17 +55,18 @@ export const signup = async (username: string, email: string, password: string):
       throw new Error('No user returned from authentication provider');
     }
     
-    if (!data.session) {
-      // Email confirmation is required
-      throw new Error('Please check your email to confirm your account');
+    // If email confirmation is not required, we'll have a session
+    if (data.session) {
+      return {
+        id: data.user.id,
+        username,
+        email: data.user.email!,
+        token: data.session.access_token,
+      };
     }
     
-    return {
-      id: data.user.id,
-      username,
-      email: data.user.email!,
-      token: data.session.access_token,
-    };
+    // If we don't have a session but the signup succeeded, it means email confirmation is required
+    throw new Error('Please check your email to confirm your account before logging in');
   } catch (error) {
     console.error('Signup error:', error);
     if (error instanceof Error) {
