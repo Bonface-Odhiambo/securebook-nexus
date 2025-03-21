@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthContextType } from '@/lib/types';
 import { login as apiLogin, signup as apiSignup } from '@/lib/api';
@@ -10,7 +11,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => { throw new Error('Not implemented') },
   signup: async () => { throw new Error('Not implemented') },
-  logout: () => {},
+  logout: async () => {},
   isLoading: false,
   error: null,
 });
@@ -117,13 +118,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
-      await supabase.auth.signOut();
+      console.log('Logging out user:', user?.email);
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Logout failed",
+          description: error.message || "There was a problem logging you out",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      // Force clear local state
       setUser(null);
       localStorage.removeItem('auth_token');
+      
       toast({
         title: "Logged out",
         description: "You have been successfully logged out",
       });
+      
+      console.log('Logout successful');
     } catch (err) {
       console.error('Logout error:', err);
       toast({

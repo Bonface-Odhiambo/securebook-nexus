@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,7 +13,9 @@ import { cn } from '@/lib/utils';
 const Navbar: React.FC = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +26,18 @@ const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <header 
@@ -71,11 +84,12 @@ const Navbar: React.FC = () => {
                     Signed in as <span className="font-medium text-foreground">{user?.username}</span>
                   </div>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
                     className="w-full text-left flex items-center px-4 py-2 text-sm hover:bg-secondary transition-colors duration-150"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
+                    {isLoggingOut ? 'Signing out...' : 'Sign out'}
                   </button>
                 </div>
               </div>
