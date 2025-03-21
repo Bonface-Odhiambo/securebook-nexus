@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthContextType } from '@/lib/types';
 import { login as apiLogin, signup as apiSignup } from '@/lib/api';
@@ -9,8 +8,8 @@ import { toast } from '@/hooks/use-toast';
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  login: async () => {},
-  signup: async () => {},
+  login: async () => { throw new Error('Not implemented'); } as unknown as Promise<User>,
+  signup: async () => { throw new Error('Not implemented'); } as unknown as Promise<User>,
   logout: () => {},
   isLoading: false,
   error: null,
@@ -25,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         console.log('Auth state changed:', event, newSession);
@@ -47,7 +45,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log('Retrieved session:', currentSession);
       setSession(currentSession);
@@ -69,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -93,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (username: string, email: string, password: string) => {
+  const signup = async (username: string, email: string, password: string): Promise<User> => {
     setIsLoading(true);
     setError(null);
     try {
