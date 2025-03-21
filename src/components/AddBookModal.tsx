@@ -54,7 +54,19 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ onSubmit, isLoading }) => {
 
   const handleSubmit = async (data: AddBookFormValues) => {
     try {
-      await onSubmit(data);
+      // Make sure we're passing a complete AddBookFormData object
+      // If coverImage is empty, provide a default empty string
+      const bookData: AddBookFormData = {
+        title: data.title,
+        author: data.author,
+        coverImage: data.coverImage || '',
+        description: data.description,
+        isbn: data.isbn,
+        publishedYear: data.publishedYear,
+        category: data.category,
+      };
+      
+      await onSubmit(bookData);
       form.reset();
       toast({
         title: "Book added",
