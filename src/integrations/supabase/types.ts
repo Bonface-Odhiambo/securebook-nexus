@@ -9,60 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      books: {
-        Row: {
-          author: string
-          created_at: string
-          description: string | null
-          id: string
-          isbn: string | null
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          author: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          isbn?: string | null
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          author?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          isbn?: string | null
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          id: string
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          id: string
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          id?: string
-          username?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
