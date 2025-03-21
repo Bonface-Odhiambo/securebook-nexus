@@ -35,7 +35,7 @@ const MOCK_BOOKS: Book[] = [
     title: 'Creative Selection',
     author: 'Ken Kocienda',
     coverImage: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1000',
-    description: 'An insider's account of Apple's creative process during the golden years of Steve Jobs.',
+    description: "An insider's account of Apple's creative process during the golden years of Steve Jobs.",
     isbn: '978-1250194466',
     publishedYear: 2018,
     category: 'Technology',
