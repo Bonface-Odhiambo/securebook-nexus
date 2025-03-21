@@ -62,7 +62,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
   const onLoginSubmit = async (data: LoginFormValues) => {
     setFormError(null);
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
+      console.log('Login successful:', user);
       toast({
         title: "Success",
         description: "You have successfully logged in",
@@ -87,7 +88,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
   const onSignupSubmit = async (data: SignupFormValues) => {
     setFormError(null);
     try {
-      await signup(data.username, data.email, data.password);
+      const user = await signup(data.username, data.email, data.password);
+      console.log('Signup successful:', user);
       toast({
         title: "Success",
         description: "Your account has been created",
