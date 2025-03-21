@@ -8,8 +8,8 @@ import { toast } from '@/hooks/use-toast';
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  login: async () => { throw new Error('Not implemented'); } as unknown as Promise<User>,
-  signup: async () => { throw new Error('Not implemented'); } as unknown as Promise<User>,
+  login: async () => { throw new Error('Not implemented') },
+  signup: async () => { throw new Error('Not implemented') },
   logout: () => {},
   isLoading: false,
   error: null,
