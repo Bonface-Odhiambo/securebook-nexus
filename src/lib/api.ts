@@ -1,5 +1,6 @@
 
 import { Book, User, AddBookFormData } from './types';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock data for demonstration
 const MOCK_BOOKS: Book[] = [
