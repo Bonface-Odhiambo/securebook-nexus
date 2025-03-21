@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getBook } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getBook, deleteBook } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,14 @@ import { ArrowLeft, Star, Clock, BookOpen, Trash2, Edit } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui/use-toast';
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const queryClient = useQueryClient();
   
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -30,6 +32,31 @@ const BookDetail = () => {
     queryFn: () => getBook(id!),
     enabled: !!id && isAuthenticated,
   });
+  
+  const deleteBookMutation = useMutation({
+    mutationFn: deleteBook,
+    onSuccess: () => {
+      toast({
+        title: "Book deleted",
+        description: "The book has been removed from your collection.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      navigate('/dashboard');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete book",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const handleDeleteBook = () => {
+    if (id) {
+      deleteBookMutation.mutate(id);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -136,7 +163,12 @@ const BookDetail = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Delete</AlertDialogAction>
+                    <AlertDialogAction 
+                      onClick={handleDeleteBook}
+                      disabled={deleteBookMutation.isPending}
+                    >
+                      {deleteBookMutation.isPending ? 'Deleting...' : 'Delete'}
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
