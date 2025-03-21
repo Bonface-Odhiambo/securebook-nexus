@@ -4,6 +4,7 @@ import { User, AuthContextType } from '@/lib/types';
 import { login as apiLogin, signup as apiSignup } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -27,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        console.log('Auth state changed:', event, newSession);
         setSession(newSession);
         if (newSession) {
           const userData: User = {
@@ -47,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log('Retrieved session:', currentSession);
       setSession(currentSession);
       if (currentSession) {
         const userData: User = {
@@ -70,11 +73,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
+      console.log('Login attempt:', email);
       const userData = await apiLogin(email, password);
       setUser(userData);
       localStorage.setItem('auth_token', userData.token);
+      return userData;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      console.error('Login failed:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      toast({
+        title: "Authentication failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -85,11 +97,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
+      console.log('Signup attempt:', email);
       const userData = await apiSignup(username, email, password);
       setUser(userData);
       localStorage.setItem('auth_token', userData.token);
+      return userData;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      console.error('Signup failed:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Signup failed';
+      setError(errorMessage);
+      toast({
+        title: "Registration failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -102,8 +123,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await supabase.auth.signOut();
       setUser(null);
       localStorage.removeItem('auth_token');
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
     } catch (err) {
       console.error('Logout error:', err);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging you out",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

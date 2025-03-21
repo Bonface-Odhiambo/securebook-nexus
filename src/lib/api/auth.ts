@@ -9,7 +9,14 @@ export const login = async (email: string, password: string): Promise<User> => {
       password,
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Login error from Supabase:', error);
+      throw new Error(error.message || 'Invalid credentials');
+    }
+    
+    if (!data.user || !data.session) {
+      throw new Error('No user or session returned from authentication provider');
+    }
     
     return {
       id: data.user.id,
@@ -19,7 +26,11 @@ export const login = async (email: string, password: string): Promise<User> => {
     };
   } catch (error) {
     console.error('Login error:', error);
-    throw new Error('Invalid credentials');
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Invalid credentials');
+    }
   }
 };
 
@@ -35,7 +46,14 @@ export const signup = async (username: string, email: string, password: string):
       },
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Signup error from Supabase:', error);
+      throw new Error(error.message || 'Failed to create account');
+    }
+    
+    if (!data.user) {
+      throw new Error('No user returned from authentication provider');
+    }
     
     if (!data.session) {
       // Email confirmation is required
@@ -50,6 +68,10 @@ export const signup = async (username: string, email: string, password: string):
     };
   } catch (error) {
     console.error('Signup error:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to create account');
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Failed to create account');
+    }
   }
 };

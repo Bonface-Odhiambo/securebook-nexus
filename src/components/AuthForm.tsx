@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -35,9 +36,10 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
-  const { login, signup, isLoading } = useAuth();
+  const { login, signup, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(mode);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -58,8 +60,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
+    setFormError(null);
     try {
       await login(data.email, data.password);
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
+      });
       if (onSuccess) {
         onSuccess();
       } else {
@@ -67,12 +74,24 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Invalid credentials';
+      setFormError(errorMessage);
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
   const onSignupSubmit = async (data: SignupFormValues) => {
+    setFormError(null);
     try {
       await signup(data.username, data.email, data.password);
+      toast({
+        title: "Success",
+        description: "Your account has been created",
+      });
       if (onSuccess) {
         onSuccess();
       } else {
@@ -80,11 +99,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
       }
     } catch (error) {
       console.error('Signup error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+      setFormError(errorMessage);
+      toast({
+        title: "Signup failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
   const toggleAuthMode = () => {
     setAuthMode(prevMode => (prevMode === 'login' ? 'signup' : 'login'));
+    setFormError(null);
   };
 
   if (authMode === 'login') {
@@ -95,6 +122,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
           <p className="text-muted-foreground">Enter your credentials to sign in</p>
         </div>
         
+        {formError && (
+          <div className="p-3 rounded-md bg-destructive/15 text-destructive text-sm">
+            {formError}
+          </div>
+        )}
+        
         <Form {...loginForm}>
           <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
             <FormField
@@ -104,7 +137,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
+                    <Input placeholder="you@example.com" {...field} type="email" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,6 +192,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
         <p className="text-muted-foreground">Enter your details to get started</p>
       </div>
       
+      {formError && (
+        <div className="p-3 rounded-md bg-destructive/15 text-destructive text-sm">
+          {formError}
+        </div>
+      )}
+      
       <Form {...signupForm}>
         <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
           <FormField
@@ -182,7 +221,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSuccess }) => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
+                  <Input placeholder="you@example.com" {...field} type="email" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
